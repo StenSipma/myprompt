@@ -64,7 +64,7 @@ mod os {
 
 use std::env;
 use std::ffi::OsString;
-use ansi_term::Colour;
+use ansi_term::{Colour, Style};
 
 mod git;
 
@@ -96,15 +96,17 @@ fn prompt(ps: Properties) {
     let user = Colour::Cyan.bold().paint(ps.user);
     let hostname = Colour::Cyan.bold().paint(ps.hostname);
     let directory = Colour::Blue.bold().paint(ps.cwd.to_string_lossy());
-    // Options for the shell prompt:
-    // λ -> > $ :: ⟩ ⟫ ❱
-    let shell = Colour::White.bold().paint("❱");
-    print!(
-        "{user} at {hostname} in {cwd} {git}\n {shell} ", 
+    println!(
+        "{user} at {hostname} in {cwd} {git}", 
         user=user,
         hostname=hostname, 
         cwd=directory,
         git=ps.git,
-        shell=shell,
     );
+    // Make sure to not use any styling here, as it will mess up the 
+    // autocomplete of Zsh
+    // Options for the shell prompt:
+    // λ -> > $ :: ⟩ ⟫ ❱
+    print!(" {shell} ", shell="❱");
+        
 }
