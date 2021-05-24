@@ -2,5 +2,4 @@
 My own shell prompt, written in Rust. It is heavily inspired from the Starship
 prompt, but very much oriented for my own system.
 
-Example:
-![example](figs/example.gif)
+<div style="text-align:center"><img src="<div style="text-align:center"><img src="..." /></div>" /></div>
