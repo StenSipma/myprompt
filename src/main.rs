@@ -64,7 +64,7 @@ mod os {
 
 use std::env;
 use std::ffi::OsString;
-use ansi_term::{Colour, Style};
+use ansi_term::Colour;
 
 mod git;
 
@@ -73,6 +73,7 @@ struct Properties {
     user: String,
     cwd: OsString,
     git: git::GitInfo,
+    venv: String,
 }
 
 impl Properties {
@@ -81,7 +82,11 @@ impl Properties {
         let user = env::var("USER").unwrap_or(String::from("???"));
         let cwd = os::get_cwd().unwrap_or(OsString::from("???"));
         let git = git::GitInfo::new();
-        Properties{hostname, user, cwd, git}
+        let venv = match env::var("VIRTUAL_ENV") {
+            Ok(path) => path.split("/").last().unwrap_or_default().into(),
+            Err(_) => String::new(),
+        };
+        Properties{hostname, user, cwd, git, venv}
     }
     
 }
@@ -96,6 +101,11 @@ fn prompt(ps: Properties) {
     let user = Colour::Cyan.bold().paint(ps.user);
     let hostname = Colour::Cyan.bold().paint(ps.hostname);
     let directory = Colour::Blue.bold().paint(ps.cwd.to_string_lossy());
+    let venv = ps.venv;
+    if venv.len() > 0 {
+        let s = format!(" {} ", venv);
+        print!("{}", Colour::Red.paint(s));
+    }
     println!(
         "{user} at {hostname} in {cwd} {git}", 
         user=user,
