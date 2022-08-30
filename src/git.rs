@@ -1,6 +1,7 @@
 use git2::{Repository, StatusOptions, Status};
 use ansi_term::Colour;
 use std::fmt;
+use eyre::Result;
 
 #[derive(Debug)]
 pub struct GitInfo {
@@ -46,14 +47,9 @@ impl fmt::Display for GitInfo {
 }
 
 impl GitInfo {
-    pub fn new() -> GitInfo {
-        match Repository::discover(".") {
-            Ok(repo) => GitInfo::from(&repo),
-            Err(_) => GitInfo::default(),
-        }
-    }
+    pub fn from(directory: &str) -> Result<GitInfo> {
 
-    pub fn from(repository: &Repository) -> GitInfo {
+        let repository = Repository::discover(directory)?;
         let name = match repository.head() {
             Ok(reference) => reference.shorthand().unwrap_or_default().into(),
             Err(_) => "-new- master".into(),
@@ -86,7 +82,7 @@ impl GitInfo {
         let mut unstaged = 0;
         let mut staged = 0;
         if stats.is_ok() { // TODO: find more elegant way to do this
-            for stat_entry in stats.unwrap().iter() {
+            for stat_entry in stats?.iter() {
                 if stat_entry.status().intersects(wt_stats) {
                     unstaged = unstaged + 1;
                 } 
@@ -95,6 +91,6 @@ impl GitInfo {
                 }
             }
         }
-        GitInfo{ name, staged, unstaged, exists:true}
+        Ok(GitInfo{ name, staged, unstaged, exists:true})
     }
 }

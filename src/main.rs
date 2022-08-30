@@ -30,7 +30,7 @@ struct Properties {
     hostname: String,
     user: String,
     cwd: OsString,
-    git: git::GitInfo,
+    git: Option<git::GitInfo>,
     venv: String,
 }
 
@@ -39,7 +39,8 @@ impl Properties {
         let hostname = os::get_hostname().unwrap_or(String::from("???"));
         let user = env::var("USER").unwrap_or(String::from("???"));
         let cwd = os::get_cwd().unwrap_or(OsString::from("???"));
-        let git = git::GitInfo::new();
+        let git = git::GitInfo::from(".").ok();
+
         let venv = match env::var("VIRTUAL_ENV") {
             Ok(path) => path.split("/").last().unwrap_or_default().into(),
             Err(_) => String::new(),
@@ -60,6 +61,7 @@ fn prompt(ps: Properties) {
     let hostname = Colour::Cyan.bold().paint(ps.hostname);
     let directory = Colour::Blue.bold().paint(ps.cwd.to_string_lossy());
     let venv = ps.venv;
+    let git = ps.git.unwrap_or_default(); // the default shows nothing
     if venv.len() > 0 {
         let s = format!(" {} ", venv);
         print!("{}", Colour::Red.paint(s));
@@ -69,7 +71,7 @@ fn prompt(ps: Properties) {
         user=user,
         hostname=hostname, 
         cwd=directory,
-        git=ps.git,
+        git=git,
     );
 
     // Make sure to not use any styling here, as it will mess up the 
