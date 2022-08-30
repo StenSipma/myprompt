@@ -9,9 +9,11 @@ prompt, but very much oriented for my own system.
 ## Installation
 Install this using cargo by:
 ````bash
-git clone ...
+git clone https://github.com/StenSipma/myprompt.git
 cd myprompt
 cargo install --path .
+cd ..
+rm -rf myprompt
 ````
 
 Then activate it in your shell by:
