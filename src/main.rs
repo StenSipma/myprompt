@@ -1,64 +1,22 @@
 mod os {
-    use std::fmt;
-
-    #[derive(Debug)]
-    pub struct MyError {
-        details: String
-    }
-
-    impl MyError {
-        fn new(msg :String) -> MyError {
-            MyError{details: msg}
-        }
-    }
-
-    impl fmt::Display for MyError {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f,"{}", self.details)
-        }
-    }
-
-    impl Error for MyError {
-        fn description(&self) -> &str {
-            &self.details
-        }
-    }
-
-    impl From<io::Error> for MyError {
-        fn from(err: io::Error) -> MyError {
-            MyError::new(err.to_string())
-        }
-    }
-
-    impl From<env::VarError> for MyError {
-        fn from(err: env::VarError) -> MyError {
-            MyError::new(err.to_string())
-        }
-    }
-
-    impl From<&str> for MyError {
-        fn from(msg: &str) -> MyError {
-            MyError::new(msg.to_string())
-        }
-    }
+    use eyre::{eyre, Result};
 
     use std::path::PathBuf;
     use std::ffi::OsString;
-    use std::{env, io, fs};
-    use std::error::Error;
+    use std::{env, fs};
 
-    pub fn get_cwd() -> Result<OsString, MyError> {
+    pub fn get_cwd() -> Result<OsString> {
         let cwd = env::current_dir()?;
         let home = PathBuf::from(env::var("HOME")?);
         if cwd == home {
             Ok(OsString::from("~"))
         } else {
-            Ok(OsString::from(cwd.components().last().ok_or(MyError::from("No last element"))?.as_os_str()))
+            Ok(OsString::from(cwd.components().last().ok_or(eyre!("No last element"))?.as_os_str()))
         }
     }
 
-    pub fn get_hostname() -> Result<String, MyError> {
-        Ok(fs::read_to_string("/etc/hostname")?.strip_suffix("\n").ok_or(MyError::from("None error"))?.to_string())
+    pub fn get_hostname() -> Result<String> {
+        Ok(fs::read_to_string("/etc/hostname")?.strip_suffix("\n").ok_or(eyre!("None error"))?.to_string())
     }
 }
 
@@ -113,10 +71,10 @@ fn prompt(ps: Properties) {
         cwd=directory,
         git=ps.git,
     );
+
     // Make sure to not use any styling here, as it will mess up the 
     // autocomplete of Zsh
     // Options for the shell prompt:
     // λ -> > $ :: ⟩ ⟫ ❱
     print!(" {shell} ", shell="❱");
-        
 }
